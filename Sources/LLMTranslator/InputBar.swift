@@ -61,6 +61,14 @@ final class InputBarController {
         model.translate()
     }
 
+    private func pinResult() {
+        guard let session = model.takeResultForPinning() else { return }
+        let point = panel.map { NSPoint(x: $0.frame.minX - 14, y: $0.frame.maxY + 14) }
+            ?? NSEvent.mouseLocation
+        TranslationPopupController.shared.pin(session: session, at: point)
+        hide()
+    }
+
     private func contentSizeChanged(_ size: CGSize) {
         guard let panel, panel.isVisible else { return }
         var frame = panel.frame
@@ -95,7 +103,7 @@ final class InputBarController {
 
         let root = InputBarView(
             model: model,
-            session: model.session,
+            onPin: { [weak self] in self?.pinResult() },
             onSize: { [weak self] size in self?.contentSizeChanged(size) }
         )
         panel.contentView = NSHostingView(rootView: root)
@@ -137,14 +145,26 @@ final class InputBarController {
 @MainActor
 final class InputBarModel: ObservableObject {
     @Published var input = ""
-    @Published var fromCode: String = AppSettings.shared.sourceCode
-    @Published var toCode: String = AppSettings.shared.targetCode
+    @Published var fromCode: String
+    @Published var toCode: String
     @Published var focusTick = 0
 
-    let session: TranslationSession
+    @Published private(set) var session: TranslationSession
 
-    init() {
+    init(
+        fromCode: String = AppSettings.shared.sourceCode,
+        toCode: String = AppSettings.shared.targetCode
+    ) {
+        self.fromCode = fromCode
+        self.toCode = toCode
+        self.session = TranslationSession()
+    }
+
+    func takeResultForPinning() -> TranslationSession? {
+        guard !session.output.isEmpty else { return nil }
+        let result = session
         session = TranslationSession()
+        return result
     }
 
     func translate() {
@@ -170,17 +190,22 @@ final class InputBarModel: ObservableObject {
 
 struct InputBarView: View {
     @ObservedObject var model: InputBarModel
+    let onPin: () -> Void
+    let onSize: (CGSize) -> Void
+
+    var body: some View {
+        InputBarContentView(model: model, session: model.session, onPin: onPin, onSize: onSize)
+    }
+}
+
+private struct InputBarContentView: View {
+    @ObservedObject var model: InputBarModel
     @ObservedObject var session: TranslationSession
+    let onPin: () -> Void
     let onSize: (CGSize) -> Void
 
     @FocusState private var focused: Bool
     @State private var copied = false
-
-    init(model: InputBarModel, session: TranslationSession, onSize: @escaping (CGSize) -> Void) {
-        self.model = model
-        self.session = session
-        self.onSize = onSize
-    }
 
     private var canSend: Bool {
         !model.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -241,6 +266,12 @@ struct InputBarView: View {
                         .controlSize(.small)
                 }
                 if !session.output.isEmpty {
+                    Button(action: onPin) {
+                        Label("Pin", systemImage: "pin")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Pin translation in a separate window on top")
                     Button {
                         session.copyOutput()
                         copied = true

@@ -40,6 +40,14 @@ LLM Translator — how to install
 
 3. The Settings window opens on first launch — pick your provider and paste
    your API key. See the README for details.
+
+4. If Accessibility is already enabled but selected-text translation still
+   requests permission after an update: quit LLM Translator, remove its old
+   entry with the minus button in System Settings > Privacy & Security >
+   Accessibility, then add /Applications/LLM Translator.app with the plus
+   button, enable it, and reopen the app. Ad-hoc signed builds can change the
+   identity saved with the old permission. Translate Clipboard works without
+   Accessibility access while you resolve this.
 TXT
 
 rm -f "$DMG"
