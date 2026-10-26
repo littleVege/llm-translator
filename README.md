@@ -21,6 +21,10 @@ Dock icon — it starts instantly and lives in your menu bar.
   paste your API key. Any OpenAI-compatible `/chat/completions` endpoint works.
 - The translation instruction (system prompt) and default languages are editable
   in Settings.
+- **Markdown results** — formatted headings, emphasis, lists, quotes, code blocks,
+  and tables, with the original Markdown preserved when copying.
+- **Pin multiple results** — keep independent translation windows on top while
+  continuing to translate new text.
 
 ---
 
@@ -102,6 +106,19 @@ while a long translation is still being generated.
 **Translate the clipboard.** Right-click the menu-bar icon → **Translate
 Clipboard** — handy in apps that block ⌘T copying.
 
+**Markdown.** Both the popup and translator bar render headings, emphasis, lists,
+quotes, links, code blocks, and tables. Code blocks and wide tables scroll
+horizontally. Source line breaks are preserved, and the copy button copies the
+original Markdown returned by the model.
+
+**Pin multiple results.** Click the pin beside a result, even while it is still
+streaming. A result pinned from the translator bar moves into its own floating
+window and continues generating. New translations do not replace pinned results.
+Drag each window to position it; switching apps, clicking outside, or pressing
+Esc leaves pinned windows open. Click its pin again to restore normal dismissal,
+or click its ✕ to close only that result. Pins last for the current app session
+and are not restored after quitting.
+
 ---
 
 ## Settings reference
@@ -124,6 +141,15 @@ Clipboard** — handy in apps that block ⌘T copying.
 The first time you press ⌥T, macOS asks for **Accessibility** permission — the
 app needs it to read the text you've selected in other apps. Grant it in
 **System Settings → Privacy & Security → Accessibility**, then press ⌥T again.
+
+**Already enabled, but access fails after an update?** An ad-hoc build's saved
+permission can still be tied to the old signature. Quit LLM Translator, select
+its entry in Accessibility and remove it with **−**, then use **+** to add
+`/Applications/LLM Translator.app`, enable access, and reopen the app. The
+permission hint's **Show This App in Finder** locates the running copy;
+**Check Again** checks its current permission. The app requests the system
+permission dialog at most once per launch. As a fallback, copy text yourself
+and use **Translate Clipboard**, which needs no Accessibility permission.
 
 ---
 

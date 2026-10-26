@@ -1,4 +1,5 @@
 import AppKit
+import MarkdownUI
 import SwiftUI
 
 /// Borderless panel that can still take keyboard focus (for the input bar).
@@ -40,6 +41,37 @@ extension View {
     }
 }
 
+/// Shared Markdown presentation for both result surfaces. Keep the source string
+/// untouched so Copy still exports exactly what the translation service sent.
+struct TranslationMarkdownView: View {
+    let text: String
+
+    var body: some View {
+        Markdown(text)
+            .markdownTheme(Self.theme)
+            .markdownSoftBreakMode(.lineBreak)
+            .textSelection(.enabled)
+    }
+
+    private static let theme = Theme.gitHub
+        .text {
+            FontSize(13)
+            ForegroundColor(.primary)
+            BackgroundColor(nil)
+        }
+        .table { configuration in
+            ScrollView(.horizontal) {
+                configuration.label
+                    .fixedSize(horizontal: true, vertical: true)
+                    .markdownTableBorderStyle(.init(color: .secondary.opacity(0.3)))
+                    .markdownTableBackgroundStyle(
+                        .alternatingRows(.clear, Color.secondary.opacity(0.06))
+                    )
+            }
+            .markdownMargin(top: 0, bottom: 12)
+        }
+}
+
 /// Streamed translation text: natural height while short, scrolls when long.
 struct OutputTextView: View {
     let text: String
@@ -53,9 +85,7 @@ struct OutputTextView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 0) {
-                    Text(text)
-                        .font(.system(size: 13))
-                        .textSelection(.enabled)
+                    TranslationMarkdownView(text: text)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(
                             GeometryReader { geometry in

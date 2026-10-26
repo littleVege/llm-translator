@@ -95,7 +95,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             }
             let mouse = NSEvent.mouseLocation
-            guard AccessibilityPermission.ensure() else {
+            guard AccessibilityPermission.shared.ensure() else {
                 TranslationPopupController.shared.showPermissionHint(at: mouse)
                 return
             }
@@ -107,18 +107,5 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func translateClipboard() {
         let text = NSPasteboard.general.string(forType: .string)
         TranslationPopupController.shared.show(text: text, at: NSEvent.mouseLocation)
-    }
-}
-
-enum AccessibilityPermission {
-    /// Returns true when the app may read selections / post keystrokes.
-    /// Shows the system grant dialog the first time it is missing.
-    static func ensure() -> Bool {
-        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-        return AXIsProcessTrustedWithOptions(options)
-    }
-
-    static var granted: Bool {
-        AXIsProcessTrusted()
     }
 }
